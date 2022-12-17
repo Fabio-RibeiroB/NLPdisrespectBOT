@@ -49,6 +49,7 @@ for user_id, score in sentiment_scores.items():
 channel = client.get_channel(654875602372919306) # Replace 1234567890 with the ID of your Discord channel
 messages = await get_recent_messages(channel)
 
+channel.send_message('The user with the most negative sentiment is: {}'.format(most_negative_user))
 
 
 client.run('MTA1MDg3NTg5NTc1NTMyMTM5NA.GiI-hz.bzd738ylC32kYt6K2PIC3x7k2hlMa8_kwz67r4')
