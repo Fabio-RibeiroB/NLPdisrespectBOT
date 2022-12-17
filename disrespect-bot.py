@@ -1,6 +1,6 @@
 import discord
 import datetime
-
+# make sure not upload TOKEN ONLINE - generate new token
 client = discord.Client()
 
 @client.event
@@ -52,6 +52,6 @@ messages = await get_recent_messages(channel)
 channel.send_message('The user with the most negative sentiment is: {}'.format(most_negative_user))
 
 
-client.run('MTA1MDg3NTg5NTc1NTMyMTM5NA.GiI-hz.bzd738ylC32kYt6K2PIC3x7k2hlMa8_kwz67r4')
+client.run(TOKEN)
 
 
