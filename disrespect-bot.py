@@ -41,13 +41,14 @@ async def on_ready():
         logger.info("None")
 
 async def get_recent_messages(channel):
-    """Get last 100 messages"""
+    """Get last 15000 messages"""
     messages = []
     logger.info("Getting recent messages...") 
     logger.info("Number of messages before loop: {}".format(len(messages)))
-    async for message in channel.history(limit=100, oldest_first=True):
+    async for message in channel.history(limit=15000):
         #if message.created_at > datetime.datetime.utcnow() - datetime.timedelta(days=7):
-        messages.append(message)
+        if message.author != discord.Member.bot:
+            messages.append(message)
     logger.info("Number of messages after loop: {}".format(len(messages)))
     return messages
 
@@ -68,24 +69,35 @@ async def main():
     sentiment_scores = {}
 
     for message in messages:
-        scores = sid.polarity_scores(message.content)
-        sentiment = scores['compound']
-        user_id = message.author.id
-        if user_id in sentiment_scores:
-            sentiment_scores[user_id] += sentiment
+        
+        # Ignore messages by bots
+        if message.author == discord.Member.bot:
+            logger.info("bot")
+            return
         else:
-            sentiment_scores[user_id] = sentiment
+            scores = sid.polarity_scores(message.content)
+            sentiment = scores['compound']
+            user_id = message.author.id
+            if user_id in sentiment_scores:
+                sentiment_scores[user_id] -= sentiment
+            else:
+                sentiment_scores[user_id] = sentiment
 
-    # Find the user with the lowest sentiment score
-    most_negative_user = client.fetch_user(user_id)
-    most_negative_score = float("inf") 
-    for user_id, score in sentiment_scores.items():
-        if score < most_negative_score:
-            most_negative_user = user_id
-            most_negative_score = score
     
+    global test_channel
+    test_channel = client.get_channel(856947170798993448) # Replace with the ID of your Discord channel
+
     logger.info("User with most negative sentiment score found")
-    await channel.send(f'I read the last 100 messages and used Natural Language Proeccessing to determine that <@{most_negative_user}> is the most negative. I am currently in BETA release. Read my code at: https://github.com/Fabio-RibeiroB/NLPdisrespectBOT')
+    await test_channel.send(f'I read the last 15000 messages in #general and used Natural Language Proeccessing to determine the most negative users.')
+    sorted_scores = sorted(sentiment_scores.items(), key=lambda x: x[1])
+    score_string = "SUPER USER NEGATIVITY\n"
+
+    for i in range(1, 6):
+        user, score = sorted_scores[i-1]
+        score_string += f'{i}. <@{user}> {score}\n'
+
+
+    await test_channel.send(score_string)
     logger.info("Message sent!")
 
 logger.info("Waiting for message...")
@@ -97,13 +109,11 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    # Check if the message starts with "!disrespect"
-    if message.content.startswith("!disrespect"):
-        logger.info("!disrespect was typed...")
+    # Check if the message starts with "!super-d"
+    if message.content.startswith("!super-d"):
+        logger.info("!super-d was typed...")
         # Call the main() function here
         await main()
 
 
 client.run(TOKEN)
-
-
