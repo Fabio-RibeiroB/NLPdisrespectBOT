@@ -10,7 +10,23 @@ import pickle
 from tabulate import tabulate
 import numpy as np
 nltk.downloader.download('vader_lexicon')
+
+logger = logging.getLogger("my_bot")
 logger.setLevel(logging.INFO)
+
+# Create a handler to log to console
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+# Create a formatter for the log messages
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+
+# Add the formatter to the console handler
+console_handler.setFormatter(formatter)
+
+# Add the console handler to the logger
+logger.addHandler(console_handler)
+logger.info("Loading variables...")
+
 load_dotenv()
 
 intents = discord.Intents.all()
@@ -22,22 +38,20 @@ client = commands.Bot(command_prefix = "$", intents = intents)
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
   
-
-
-
 async def get_recent_messages(ctx, limit):
     """Get the channel's messages going back by the amount specified by limit"""
     message_list = []
     async for message in ctx.channel.history(limit=limit, oldest_first=False):
-        message_list.append(message)
+        if message.author != discord.Member.bot:
+            message_list.append(message)
     
     return message_list
 
 @client.command()
 async def disrespect(ctx, limit=None):
 
-    print("yes")
-    
+    logger.info("Starting nlp...")
+
     if limit is not None:
         limit = int(limit) # test this with letters        
 
@@ -57,9 +71,6 @@ async def disrespect(ctx, limit=None):
             sentiment_scores[user_id] += sentiment
         else:
             sentiment_scores[user_id] = sentiment
-
-    with open('sentiment_scores.pkl', 'wb') as f:
-        pickle.dump(sentiment_scores, f)
     
     sentiment_board = pd.DataFrame(sentiment_scores, index=[0]).transpose()
     sentiment_board = sentiment_board.rename(columns={0: "score"})
@@ -81,10 +92,9 @@ async def get_name_from_id(user_id):
     user = await client.fetch_user(user_id)
     return user.name[:8]
 
-print("hello")
 
 async def display_leaderboard(ctx, names, scores, message_count):
-
+    logger.info("Preparing leaderboard...")
     tot_users = len(names)
     num_pages = int(np.ceil(tot_users/10)) # 10 people per page
     index = np.arange(1, len(names)+1, 1)  # rank
@@ -105,7 +115,8 @@ async def display_leaderboard(ctx, names, scores, message_count):
         page_i.add_field(name = f"Messages searched: {message_count}", value = "```"+tabulate(zip(index_i, names_i, scores_i), headers = ["", "Name", "Score"], tablefmt = "fancy_grid")+"```")
 
         pages.append(page_i)
-
+        
+    logger.info("Sending messages...")
     message = await ctx.send(embed = pages[0])
     await message.add_reaction('⏮')
     await message.add_reaction('◀')
