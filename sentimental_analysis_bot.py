@@ -42,7 +42,7 @@ async def on_ready():
 async def get_recent_messages(ctx, limit):
     """Get the channel's messages going back by the amount specified by limit"""
     message_list = []
-    async for message in ctx.channel.history(limit=limit, oldest_first=False):
+    async for message in ctx.channel.history(limit=limit, oldest_first=False, before=ctx.message):
         if not message.author.bot: 
             message_list.append(message)
     
