@@ -47,6 +47,7 @@ async def get_recent_messages(channel):
     logger.info("Number of messages before loop: {}".format(len(messages)))
     async for message in channel.history(limit=15000):
         #if message.created_at > datetime.datetime.utcnow() - datetime.timedelta(days=7):
+        print(discord.Member.bot)
         if message.author != discord.Member.bot:
             messages.append(message)
     logger.info("Number of messages after loop: {}".format(len(messages)))

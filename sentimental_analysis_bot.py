@@ -88,6 +88,7 @@ async def disrespect(ctx, limit=None):
     await display_leaderboard(ctx, names, scores, message_count)
     print(tabulate(zip(index, names, scores), headers = ["", "Name", "Score"], tablefmt = "grid"))
 
+    await ctx.message.remove()
 
 async def get_name_from_id(user_id):
     user = await client.fetch_user(user_id)
