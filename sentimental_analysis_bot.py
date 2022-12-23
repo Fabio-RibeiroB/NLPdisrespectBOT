@@ -88,8 +88,6 @@ async def disrespect(ctx, limit=None):
     await display_leaderboard(ctx, names, scores, message_count)
     print(tabulate(zip(index, names, scores), headers = ["", "Name", "Score"], tablefmt = "grid"))
 
-    await ctx.message.remove()
-
 async def get_name_from_id(user_id):
     user = await client.fetch_user(user_id)
     return user.name[:8]
@@ -114,12 +112,12 @@ async def display_leaderboard(ctx, names, scores, message_count):
         scores_i = [f"{x:.3g}" for x in scores_i] # round scores 3sf
         
         # makes the page
-        page_i.add_field(name = f"Messages searched: {message_count}", value = "```"+tabulate(zip(index_i, names_i, scores_i), headers = ["", "Name", "Score"], tablefmt = "fancy_grid")+"```")
+        page_i.add_field(name = f"User messages found: {message_count}", value = "```"+tabulate(zip(index_i, names_i, scores_i), headers = ["", "Name", "Score"], tablefmt = "fancy_grid")+"```")
 
         pages.append(page_i)
         
     logger.info("Sending messages...")
-    message = await ctx.send(embed = pages[0])
+    message = await ctx.send(embed = pages[0], delete_after=100)
     await message.add_reaction('⏮')
     await message.add_reaction('◀')
     await message.add_reaction('▶')
